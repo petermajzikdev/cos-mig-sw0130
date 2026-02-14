@@ -1,0 +1,76 @@
+═══════════════════════════════════════════════════════
+   GYORS FELTÖLTÉSI ÚTMUTATÓ - Raspberry Pi Pico
+═══════════════════════════════════════════════════════
+
+📋 SZÜKSÉGES FÁJLOK:
+   ✓ main.py
+   ✓ bmp280.py
+   ✓ microphone_i2s.py
+
+═══════════════════════════════════════════════════════
+
+🚀 LÉPÉSEK:
+
+1️⃣  PICO CSATLAKOZTATÁSA
+    - Dugd be USB-n a Pico-t
+    - Thonny automatikusan érzékeli
+
+2️⃣  MICROPYTHON ELLENŐRZÉSE
+    - Run → Configure interpreter...
+    - MicroPython (Raspberry Pi Pico)
+    - Ha nincs telepítve: Install or update MicroPython
+
+3️⃣  FÁJLOK FELTÖLTÉSE
+
+    Mindhárom fájlnál:
+    a) Nyisd meg a fájlt Thonny-ban
+    b) File → Save as...
+    c) Válaszd: Raspberry Pi Pico
+    d) Mentsd ugyanazon a néven
+
+    Sorrend:
+    1. bmp280.py          → Pico-ra
+    2. microphone_i2s.py  → Pico-ra
+    3. main.py            → Pico-ra
+
+4️⃣  FUTTATÁS
+    - Kattints a zöld RUN gombra (vagy F5)
+    - VAGY indítsd újra a Pico-t (USB kihúzás-visszadugás)
+
+5️⃣  KIMENET
+    Shell ablakban látod az adatokat:
+    🌡️  Hőmérséklet: 23.45 °C
+    📊 Légnyomás:   1013.25 hPa
+    ⛰️  Magasság:    112.3 m
+    🎤 Hangerő: [████                ] 0.123
+
+═══════════════════════════════════════════════════════
+
+🔌 HARDVER BEKÖTÉS:
+
+BMP280:              I2S Mikrofon:
+  VCC  → 3.3V          VCC  → 3.3V
+  GND  → GND           GND  → GND
+  SCL  → GPIO 1        BCLK → GPIO 16
+  SDA  → GPIO 0        WS   → GPIO 17
+                       SD   → GPIO 18
+                       SEL  → GND
+
+═══════════════════════════════════════════════════════
+
+❓ GYAKORI HIBÁK:
+
+"Device is busy"
+  → STOP gomb, Pico újraindítás
+
+"No module named 'bmp280'"
+  → Nem töltötted fel a bmp280.py-t
+
+BMP280 nem találja
+  → Ellenőrizd I2C vezetékeket (GPIO 0, 1)
+
+═══════════════════════════════════════════════════════
+
+ℹ️  Részletes útmutató: FELTOLTES_UTMUTATO.md
+
+═══════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
-from machine import Pin, Timer
+from machine import Pin
+import time
 
 class LEDController:
     """LED státusz és hibajelző kezelő"""
@@ -6,7 +7,6 @@ class LEDController:
     def __init__(self, status_pin, error_pin):
         self.status_led = Pin(status_pin, Pin.OUT)
         self.error_led = Pin(error_pin, Pin.OUT)
-        self.blink_timer = None
         self.status_led.value(0)
         self.error_led.value(0)
 
@@ -40,11 +40,12 @@ class LEDController:
         """
         for _ in range(count):
             self.error_led.value(1)
-            Timer(-1).init(period=interval_ms, mode=Timer.ONE_SHOT, callback=lambda t: None)
+            time.sleep_ms(interval_ms)
             self.error_led.value(0)
-            Timer(-1).init(period=interval_ms, mode=Timer.ONE_SHOT, callback=lambda t: None)
+            time.sleep_ms(interval_ms)
 
     def heartbeat(self):
         """Gyors státusz villanás (életjel)"""
         self.status_led.value(1)
-        Timer(-1).init(period=50, mode=Timer.ONE_SHOT, callback=lambda t: self.status_led.value(0))
+        time.sleep_ms(50)
+        self.status_led.value(0)
