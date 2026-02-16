@@ -2,48 +2,75 @@
 Komponens Teszt Script
 Egyenként teszteli a CanSat komponenseket
 """
-
+"""A machine modulból importálja az I2C (kommunikációs protokoll) és Pin (GPIO lábak kezelése) osztályokat"""
 from machine import I2C, Pin
+"""Időkezelő függvények importálása (várakozás, időmérés)"""
 import time
+"""Külső config fájl betöltése, ami a pin számokat és beállításokat tartalmazza"""
 import config
 
 def test_bmp280():
     """BMP280 szenzor tesztelése"""
     print("\n=== BMP280 TESZT ===")
     try:
+        """A BMP280 szenzor driver könyvtár betöltése"""
         import bmp280
+        """Létrehozza az I2C busz objektumot"""
+        """0 = I2C0 busz használata"""
+        """scl=Pin(...) = órajel (clock) láb beállítása a config-ból"""
+        """sda=Pin(...) = adat (data) láb beállítása"""
+        """freq=... = kommunikációs frekvencia beállítása"""
         i2c = I2C(0, scl=Pin(config.I2C_SCL), sda=Pin(config.I2C_SDA), freq=config.I2C_FREQ)
-        time.sleep_ms(100)
+        """Az I2C busz stabilizálódására vár"""
+        time.sleep_ms(100)  
 
-        devices = i2c.scan()
+        """Végigpásztázza az I2C buszt, megkeresi az összes csatlakoztatott eszközt"""
+        devices = i2c.scan() 
+        """Kiírja az eszközök címeit hexadecimális formában (pl. 0x76, 0x77)"""
         print(f"I2C eszközök: {[hex(d) for d in devices]}")
 
+        """Ha nincs eszköz a buszon, hibaüzenetet ír és False-szal tér vissza"""
         if not devices:
             print("❌ Nincs I2C eszköz!")
             return False
 
+        """bmp_addr: Az első talált eszköz címét eltárolja"""
         bmp_addr = devices[0]
+        """chip_id olvasás: A 0xD0 memóriacímről olvas 1 byte-ot (ez a chip azonosító regiszter)"""
         chip_id = i2c.readfrom_mem(bmp_addr, 0xD0, 1)[0]
+        """Kiírja a chip ID-t hex formában"""
         print(f"Chip ID: {hex(chip_id)}")
 
+        """Ellenőrzi, hogy a chip ID 0x58-e (ez a BMP280 azonosítója)"""
         if chip_id == 0x58:
+            """Ha igen, létrehozza a BMP280 szenzor objektumot"""
             sensor = bmp280.BMP280(i2c, addr=bmp_addr)
+            """Sikeres inicializálás üzenet"""
             print("✓ BMP280 inicializálva")
 
             # Teszt olvasások
+            """3 mérést végez (0, 1, 2 indexekkel)"""
             for i in range(3):
+                """sensor.read(): Beolvassa a nyomást (hPa) és hőmérsékletet (°C)"""
                 pres, temp = sensor.read()
+                """Magasság számítás: Barometrikus képlettel számol (tengerszint feletti magasság)"""
+                """44330 = konstans"""
+                """1013.25 = tengerszinti átlagnyomás hPa-ban"""
+                """0.1903 = exponens a képletben"""
                 altitude = 44330 * (1 - (pres / 1013.25) ** 0.1903)
+                """Kiírja az értékeket formázva (2 tizedesjegy temp/nyomás, 1 magasság)"""
                 print(f"  [{i+1}] Hőmérséklet: {temp:.2f} °C, Nyomás: {pres:.2f} hPa, Magasság: {altitude:.1f} m")
+                """0.5 mp várakozás mérések között"""
                 time.sleep(0.5)
-
+            """Ha minden rendben: OK üzenet, True visszatérés"""
             print("✓ BMP280 OK")
             return True
         else:
+            """Ha nem 0x58 a chip ID: hiba, False visszatérés"""
             print(f"❌ Ismeretlen chip: {hex(chip_id)}")
             return False
-
-    except Exception as e:
+    
+    except Exception as e: # Hibakezelés
         print(f"❌ BMP280 hiba: {e}")
         return False
 
@@ -52,8 +79,16 @@ def test_i2s_microphone():
     """I2S mikrofon tesztelése"""
     print("\n=== I2S MIKROFON TESZT ===")
     try:
+        """Importálja az I2S mikrofon driver osztályt"""
         from microphone_i2s import I2S_Microphone
-
+        """
+        Mikrofon objektum létrehozása az alábbi paraméterekkel:
+            sck_pin = Serial Clock (órajel)
+            ws_pin = Word Select (bal/jobb csatorna választás)
+            sd_pin = Serial Data (adat láb)
+            sample_rate = mintavételi frekvencia (pl. 16000 Hz)
+            bits = bit mélység (pl. 16 bit)
+        """
         mic = I2S_Microphone(
             sck_pin=config.I2S_SCK,
             ws_pin=config.I2S_WS,
@@ -62,7 +97,7 @@ def test_i2s_microphone():
             bits=config.MIC_BITS
         )
 
-        if not mic.initialized:
+        if not mic.initialized: # Ellenőrzi az inicializálás sikerességét
             print("❌ I2S mikrofon inicializálás sikertelen")
             return False
 
@@ -71,12 +106,18 @@ def test_i2s_microphone():
         # Teszt olvasások
         print("Hangfelvétel teszt (3 mérés)...")
         for i in range(3):
+            """RMS (Root Mean Square) hangerő szintet mér
+            Ez egy átlagos hangerősség érték"""
             rms = mic.get_rms_level(config.MIC_SAMPLE_COUNT)
+            """Vizuális megjelenítés:
+            bar_length = az RMS értéket 40-szeresére skálázza (vizualizációhoz)
+            bar = "█" karakterekből készít egy sávot (minél hangosabb, annál hosszabb)
+            {bar:<40} = balra igazítva, 40 karakter széles mezőben"""
             bar_length = int(rms * 40)
             bar = "█" * bar_length
             print(f"  [{i+1}] RMS: {rms:.4f} [{bar:<40}]")
-            time.sleep(0.5)
-
+            time.sleep(0.5) # 0.5 mp várakozás mérések között
+        """Mikrofon leállítása (erőforrások felszabadítása)"""
         mic.deinit()
         print("✓ I2S mikrofon OK")
         return True
@@ -88,10 +129,18 @@ def test_i2s_microphone():
 
 def test_lora():
     """LoRa modul tesztelése"""
+    """LoRa (nagy hatótávú rádió) teszt
+"""
     print("\n=== LoRa MODUL TESZT ===")
     try:
         from lora_radio import LoRaRadio
-
+"""LoRa objektum létrehozása SPI pin-ekkel:
+sck = Serial Clock
+mosi = Master Out Slave In (adat kimenet)
+miso = Master In Slave Out (adat bemenet)
+cs = Chip Select (eszköz választás)
+rst = Reset (újraindítás)
+dio0 = Digital I/O 0 (megszakítás kezelés)"""
         lora = LoRaRadio(
             sck_pin=config.LORA_SCK,
             mosi_pin=config.LORA_MOSI,
@@ -100,7 +149,12 @@ def test_lora():
             rst_pin=config.LORA_RST,
             dio0_pin=config.LORA_DIO0
         )
-
+"""LoRa inicializálás rádió paraméterekkel:
+frequency = frekvencia MHz-ben (pl. 433 vagy 868 MHz)
+tx_power = adóteljesítmény dBm-ben
+spreading_factor = terjedési faktor (hatótáv vs sebesség)
+bandwidth = sávszélesség
+coding_rate = hibavédelem mértéke"""
         if not lora.init(
             frequency=config.LORA_FREQUENCY,
             tx_power=config.LORA_TX_POWER,
@@ -117,7 +171,9 @@ def test_lora():
 
         # Teszt üzenet küldése
         print("Teszt üzenet küldése...")
+"""Teszt üzenet összeállítása CSV formátumban (teszt adatok)"""
         test_msg = "TEST,1,25.5,1013.25,100.0,0.1234"
+
         if lora.send(test_msg):
             print("✓ Teszt üzenet elküldve")
         else:
@@ -137,7 +193,7 @@ def test_sd_card():
     print("\n=== SD KÁRTYA TESZT ===")
     try:
         from sd_logger import SDLogger
-
+        """SD kártya objektum SPI kommunikációval"""
         sd = SDLogger(
             sck_pin=config.SD_SCK,
             mosi_pin=config.SD_MOSI,
