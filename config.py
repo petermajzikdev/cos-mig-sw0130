@@ -7,9 +7,9 @@ I2C_SDA = 0
 I2C_FREQ = 400000  # 400 kHz
 
 # I2S Mikrofon
-I2S_SCK = 16
-I2S_WS = 17
-I2S_SD = 18
+I2S_SCK = 35 # BCLK (sárga vezeték)
+I2S_WS = 18 # LRCL (narancs vezeték)
+I2S_SD = 22 # DOUT (kék vezeték)
 
 # LoRa SPI (RFM95W / SX1276 / SX1278)
 LORA_SCK = 10
@@ -53,4 +53,4 @@ LORA_SPREADING_FACTOR = 7  # 7-12 (nagyobb = nagyobb hatótáv, de lassabb)
 LORA_CODING_RATE = 5  # 5-8
 
 # === EGYÉB ===
-MISSION_ID = "CANSAT01"  # Azonosító
+MISSION_ID = "COSMIG2026"  # Azonosító

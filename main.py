@@ -9,7 +9,7 @@ from microphone_i2s import I2S_Microphone
 I2C_SCL = 1
 I2C_SDA = 0
 
-# I2S mikrofon pinok (módosítsd saját bekötésednek megfelelően!)
+# I2S mikrofon pinok (módosítani a bekötésnek megfelelően!)
 I2S_SCK = 16   # Bit Clock (BCLK)
 I2S_WS = 17    # Word Select (LRCLK/WS)
 I2S_SD = 18    # Serial Data (DOUT/SD)
