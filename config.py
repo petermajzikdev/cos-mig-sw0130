@@ -7,9 +7,9 @@ I2C_SDA = 0
 I2C_FREQ = 400000  # 400 kHz
 
 # I2S Mikrofon
-I2S_SCK = 35 # BCLK (sárga vezeték)
-I2S_WS = 18 # LRCL (narancs vezeték)
-I2S_SD = 22 # DOUT (kék vezeték)
+I2S_SCK = 14 # BCLK (sárga vezeték)
+I2S_WS = 16 # LRCL (narancs vezeték)
+I2S_SD = 15 # DOUT (kék vezeték)
 
 # LoRa SPI (RFM95W / SX1276 / SX1278)
 LORA_SCK = 10
