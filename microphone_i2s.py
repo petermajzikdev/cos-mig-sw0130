@@ -6,7 +6,7 @@ class I2S_Microphone:
     - ICS-43434
     """
 
-    def __init__(self, sck_pin=16, ws_pin=17, sd_pin=18, sample_rate=16000, bits=16):
+    def __init__(self, sck_pin=14, ws_pin=16, sd_pin=15, sample_rate=16000, bits=16):
         """
         I2S mikrofon inicializálása
 
